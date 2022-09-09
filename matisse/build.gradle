@@ -43,6 +43,8 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:4.13.1'
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation project(path: ':lib_crop')
+    implementation project(path: ':lib_luban')
 }
 
 task javadoc(type: Javadoc) {

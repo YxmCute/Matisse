@@ -178,6 +178,7 @@ class SampleActivity : AppCompatActivity(), View.OnClickListener {
                         .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
                         .thumbnailScale(0.85f)
                         .imageEngine(GlideEngine())
+                        .isCrop(true)
                         .setOnSelectedListener { uriList: List<Uri?>?, pathList: List<String?> ->
                             Log.e(
                                 "onSelected",

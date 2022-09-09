@@ -1,14 +1,22 @@
 package com.zhihu.matisse.internal.utils;
 
 import android.annotation.TargetApi;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.FileUtils;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
+import androidx.annotation.RequiresApi;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * http://stackoverflow.com/a/27271131/4739220
@@ -27,7 +35,7 @@ public class PathUtils {
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public static String getPath(final Context context, final Uri uri) {
         // DocumentProvider
-        if (Platform.hasKitKat() && DocumentsContract.isDocumentUri(context, uri)) {
+        if (Platform.hasKitKat() && android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q&& DocumentsContract.isDocumentUri(context, uri)) {
             // ExternalStorageProvider
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);
@@ -67,7 +75,12 @@ public class PathUtils {
 
                 return getDataColumn(context, contentUri, selection, selectionArgs);
             }
-        } else if ("content".equalsIgnoreCase(uri.getScheme())) { // MediaStore (and general)
+        }
+      // MediaStore (and general)
+      if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+        return getFileFromContentUri(context,uri);
+      }
+        else if ("content".equalsIgnoreCase(uri.getScheme())) { // MediaStore (and general)
             return getDataColumn(context, uri, null, null);
         } else if ("file".equalsIgnoreCase(uri.getScheme())) { // File
             return uri.getPath();
@@ -107,7 +120,66 @@ public class PathUtils {
         }
         return null;
     }
-
+  /**
+   * Android 10 以上适配 另一种写法
+   * @param context
+   * @param uri
+   * @return
+   */
+  private static String getFileFromContentUri(Context context, Uri uri) {
+    if (uri == null) {
+      return null;
+    }
+    String filePath;
+    String[] filePathColumn = {MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME};
+    ContentResolver contentResolver = context.getContentResolver();
+    Cursor cursor = contentResolver.query(uri, filePathColumn, null,
+        null, null);
+    if (cursor != null) {
+      cursor.moveToFirst();
+      try {
+        filePath = cursor.getString(cursor.getColumnIndex(filePathColumn[0]));
+        return filePath;
+      } catch (Exception e) {
+      } finally {
+        cursor.close();
+      }
+    }
+    return "";
+  }
+  /**
+   * Android 10 以上适配
+   * @param context
+   * @param uri
+   * @return
+   */
+  @RequiresApi(api = Build.VERSION_CODES.Q)
+  private static String uriToFileApiQ(Context context, Uri uri) {
+    File file = null;
+    //android10以上转换
+    if (uri.getScheme().equals(ContentResolver.SCHEME_FILE)) {
+      file = new File(uri.getPath());
+    } else if (uri.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
+      //把文件复制到沙盒目录
+      ContentResolver contentResolver = context.getContentResolver();
+      Cursor cursor = contentResolver.query(uri, null, null, null, null);
+      if (cursor.moveToFirst()) {
+        String displayName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        try {
+          InputStream is = contentResolver.openInputStream(uri);
+          File cache = new File(context.getExternalCacheDir().getAbsolutePath(), Math.round((Math.random() + 1) * 1000) + displayName);
+          FileOutputStream fos = new FileOutputStream(cache);
+          FileUtils.copy(is, fos);
+          file = cache;
+          fos.close();
+          is.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return file.getAbsolutePath();
+  }
 
     /**
      * @param uri The Uri to check.

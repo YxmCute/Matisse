@@ -385,4 +385,14 @@ public final class SelectionCreator {
         mSelectionSpec.showPreview = showPreview;
         return this;
     }
+    /**
+     *
+     * @param isCrop true is crop
+     * @return {@link SelectionCreator} for fluent API.
+     */
+    public SelectionCreator isCrop(boolean isCrop) {
+        mSelectionSpec.isCrop = isCrop;
+        return this;
+    }
+
 }

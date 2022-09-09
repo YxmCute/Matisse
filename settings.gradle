@@ -1,1 +1,3 @@
 include ':sample', ':matisse'
+include ':lib_crop'
+include ':lib_luban'
