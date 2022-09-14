@@ -166,27 +166,28 @@ public class Luban implements Handler.Callback {
     return results;
   }
 
-  private File compress(Context context, InputStreamProvider path) throws IOException {
+  private File compress(Context context, InputStreamProvider inputStreamProvider)
+      throws IOException {
     File result;
 
-    File outFile = getImageCacheFile(context, Checker.SINGLE.extSuffix(path));
+    File outFile = getImageCacheFile(context, Checker.SINGLE.extSuffix(inputStreamProvider));
 
     if (mRenameListener != null) {
-      String filename = mRenameListener.rename(path.getPath());
+      String filename = mRenameListener.rename(inputStreamProvider.getPath());
       outFile = getImageCustomFile(context, filename);
     }
 
     if (mCompressionPredicate != null) {
-      if (mCompressionPredicate.apply(path.getPath())
-          && Checker.SINGLE.needCompress(mLeastCompressSize, path.getPath())) {
-        result = new Engine(path, outFile, focusAlpha).compress();
+      if (mCompressionPredicate.apply(inputStreamProvider.getPath())
+          && Checker.SINGLE.needCompress(mLeastCompressSize, inputStreamProvider.getPath())) {
+        result = new Engine(inputStreamProvider, outFile, focusAlpha).compress();
       } else {
-        result = new File(path.getPath());
+        result = new File(inputStreamProvider.getPath());
       }
     } else {
-      result = Checker.SINGLE.needCompress(mLeastCompressSize, path.getPath()) ?
-          new Engine(path, outFile, focusAlpha).compress() :
-          new File(path.getPath());
+      result = Checker.SINGLE.needCompress(mLeastCompressSize, inputStreamProvider.getPath()) ?
+          new Engine(inputStreamProvider, outFile, focusAlpha).compress() :
+          new File(inputStreamProvider.getPath());
     }
 
     return result;
@@ -211,9 +212,9 @@ public class Luban implements Handler.Callback {
   }
 
   public static class Builder {
-    private final Context                   context;
-    private       String                    mTargetDir;
-    private       boolean                   focusAlpha;
+    private final Context context;
+    private       String  mTargetDir;
+    private       boolean focusAlpha, ignoreContentUri;
     private       int                       mLeastCompressSize = 100;
     private       OnRenameListener          mRenameListener;
     private       OnCompressListener        mCompressListener;
@@ -289,11 +290,15 @@ public class Luban implements Handler.Callback {
           }
           ParcelFileDescriptor fd = context.getContentResolver().openFileDescriptor(uri, "r");
           FileInputStream fis = new ParcelFileDescriptor.AutoCloseInputStream(fd);
+
           return fis;
         }
 
         @Override
         public String getPath() {
+         /* if (ignoreContentUri) {
+            return uri.toString();
+          }*/
           return LuBanPathUtils.getPath(context, uri);
         }
       });
@@ -337,6 +342,11 @@ public class Luban implements Handler.Callback {
      */
     public Builder ignoreBy(int size) {
       this.mLeastCompressSize = size;
+      return this;
+    }
+
+    public Builder ignoreContentUri(boolean ignoreContentUri) {
+      this.ignoreContentUri = ignoreContentUri;
       return this;
     }
 

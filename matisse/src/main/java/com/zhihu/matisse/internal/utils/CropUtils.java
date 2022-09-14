@@ -13,29 +13,21 @@ import java.io.File;
 
 public class CropUtils {
 
-    public static String CropPhoto(String inputPath, Activity activity, String authority,int requestCode) {
-        File takePhotoImg = new File(activity.getExternalCacheDir(), "crop" + System.currentTimeMillis() + ".png");
-        Uri imgUri;
-        if (Build.VERSION.SDK_INT >= 24) {
-            imgUri = FileProvider.getUriForFile(activity,authority, takePhotoImg);
-        } else {
-            imgUri = Uri.fromFile(takePhotoImg);
-        }
-        Crop.of(Uri.parse("file://" + inputPath), imgUri).asSquare().start(activity, requestCode);
-        return takePhotoImg.getPath();
+  public static String CropPhoto(Uri inputPath, Activity activity, String authority,
+      int requestCode) {
+    File file = new File(activity.getExternalCacheDir() + "/Crop");
+    if (!file.exists()) {
+      file.mkdirs();
     }
-
-    public static String CropPhoto(Uri inputPath, Activity activity, String authority,int requestCode) {
-        File takePhotoImg = new File(activity.getExternalCacheDir(), "crop" + System.currentTimeMillis() + ".png");
-        Uri imgUri;
-        if (Build.VERSION.SDK_INT >= 24) {
-            imgUri = FileProvider.getUriForFile(activity,authority, takePhotoImg);
-        } else {
-            imgUri = Uri.fromFile(takePhotoImg);
-        }
-        Crop.of(inputPath, imgUri).asSquare().start(activity, requestCode);
-        return takePhotoImg.getPath();
+    File takePhotoImg = new File(file.getAbsolutePath(),
+        "crop" + System.currentTimeMillis() + ".png");
+    Uri imgUri;
+    if (Build.VERSION.SDK_INT >= 24) {
+      imgUri = FileProvider.getUriForFile(activity, authority, takePhotoImg);
+    } else {
+      imgUri = Uri.fromFile(takePhotoImg);
     }
-
-
+    Crop.of(inputPath, imgUri).asSquare().start(activity, requestCode);
+    return takePhotoImg.getPath();
+  }
 }

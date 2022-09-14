@@ -10,9 +10,17 @@ import java.io.InputStream;
  * Get the input stream through this interface, and obtain the picture using compatible files and
  * FileProvider
  */
-public interface InputStreamProvider {
+public class InputStreamProviderAdapter implements  InputStreamProvider{
 
-  InputStream open() throws IOException;
 
-  String getPath();
+
+  @Override
+  public InputStream open() throws IOException {
+    return null;
+  }
+
+  @Override
+  public String getPath() {
+    return null;
+  }
 }

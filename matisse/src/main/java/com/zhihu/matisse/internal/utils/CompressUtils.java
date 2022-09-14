@@ -14,22 +14,26 @@ import java.util.List;
 
 public class CompressUtils {
 
-
-  public static void CompressPhoto(Activity activity, List<Uri> uriList,
+  public static void CompressPhoto(Activity activity, List<Uri> uriList,boolean ignoreContentUri,
       OnCompressListener onCompressListener) throws IOException {
     Luban.with(activity.getApplicationContext())
         .load(uriList)                                   // 传入要压缩的图片列表
-        .ignoreBy(248)                                  // 忽略不压缩图片的大小
-        .setTargetDir(
-            activity.getApplicationContext().getExternalCacheDir().getPath())   // 设置压缩后文件存储位置
+        .ignoreBy(250) .ignoreContentUri(ignoreContentUri)                                 // 忽略不压缩图片的大小
+        .setCompressListener(onCompressListener).launch();    //启动压缩
+  }
+  public static void CompressPhoto(Activity activity, String path,
+      OnCompressListener onCompressListener) throws IOException {
+    Luban.with(activity.getApplicationContext())
+        .load(path)                                   // 传入要压缩的图片列表
+        .ignoreBy(250)                                  // 忽略不压缩图片的大小
         .setCompressListener(onCompressListener).launch();    //启动压缩
   }
 
-  public static void CompressPhoto(Activity activity, Uri photo,
+  public static void CompressPhoto(Activity activity, Uri photo,boolean ignoreContentUri,
       OnCompressListener onCompressListener) throws IOException {
     List<Uri> photoList = new ArrayList<>(1);
     photoList.add(photo);
-    CompressPhoto(activity, photoList, onCompressListener);
+    CompressPhoto(activity, photoList,ignoreContentUri, onCompressListener);
   }
 }
 

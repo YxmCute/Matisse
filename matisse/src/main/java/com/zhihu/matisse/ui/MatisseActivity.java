@@ -26,6 +26,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
@@ -246,7 +248,7 @@ public class MatisseActivity extends AppCompatActivity implements
               mPathList.clear();
               mPathUriList.clear();
               try {
-                CompressUtils.CompressPhoto(MatisseActivity.this, selectedUris,
+                CompressUtils.CompressPhoto(MatisseActivity.this, selectedUris, false,
                     mOnCompressListener);
               } catch (IOException e) {
                 e.printStackTrace();
@@ -296,22 +298,36 @@ public class MatisseActivity extends AppCompatActivity implements
           });
       finish();
     } else if (requestCode == REQUEST_CODE_CROP) {
-      String path = mPathList.get(0);
-      Uri uri = FileProvider.getUriForFile(MatisseActivity.this,
+      if (data != null) {
+        Uri uri = data.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
+
+        if (uri != null) {
+          try {
+            String path = mPathList.get(0);
+            CompressUtils.CompressPhoto(MatisseActivity.this, path, mOnCompressListener);
+            mPathList.clear();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+      // MediaStore.EXTRA_OUTPUT
+      // String path = mPathList.get(0);
+      /*Uri uri = FileProvider.getUriForFile(MatisseActivity.this,
           mSpec.captureStrategy.authority, new File(path));
-      mPathList.clear();
-     // mPathUriList.add(uri);
+      mPathList.clear();*/
+      // mPathUriList.add(uri);
       /*Intent result = new Intent();
       result.putStringArrayListExtra(EXTRA_RESULT_SELECTION_PATH, mPathList);
       result.putParcelableArrayListExtra(EXTRA_RESULT_SELECTION, mPathUriList);
       result.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, mOriginalEnable);
       setResult(RESULT_OK, result);
       finish();*/
-      try {
+      /*try {
         CompressUtils.CompressPhoto(MatisseActivity.this, uri, mOnCompressListener);
       } catch (IOException e) {
         e.printStackTrace();
-      }
+      }*/
     }
   }
 
@@ -325,7 +341,10 @@ public class MatisseActivity extends AppCompatActivity implements
     public void onSuccess(File file) {
       mPathList.add(file.getAbsolutePath());
 
-      /*Uri uri = FileProvider.getUriForFile(MatisseActivity.this,
+      //  Uri uri = Uri.fromFile(file);
+      //  mPathUriList.add(uri);
+
+      Uri uri = FileProvider.getUriForFile(MatisseActivity.this,
           mSpec.captureStrategy.authority, file);
       mPathUriList.add(uri);
 
@@ -337,7 +356,7 @@ public class MatisseActivity extends AppCompatActivity implements
         result.putExtra(EXTRA_RESULT_ORIGINAL_ENABLE, mOriginalEnable);
         setResult(RESULT_OK, result);
         finish();
-      }*/
+      }
     }
 
     @Override
@@ -419,7 +438,7 @@ public class MatisseActivity extends AppCompatActivity implements
       ArrayList<Uri> selectedUris = (ArrayList<Uri>) mSelectedCollection.asListOfUri();
       mSelectNumber = selectedPaths.size();
       //看看是否有视频  如果有视频 图片和视频不能同时选择 所有判断第一个就行了
-      if (mSelectNumber>0){
+      if (mSelectNumber > 0) {
         Item item = mSelectedCollection.asList().get(0);
         boolean isVideo = item.isVideo();
         if (!isVideo && mSelectNumber == 1 && mSpec.isCrop) {
@@ -431,7 +450,8 @@ public class MatisseActivity extends AppCompatActivity implements
         }
         try {
           if (!isVideo) {
-            CompressUtils.CompressPhoto(MatisseActivity.this, selectedUris, mOnCompressListener);
+            CompressUtils.CompressPhoto(MatisseActivity.this, selectedUris, false,
+                mOnCompressListener);
             return;
           }
         } catch (IOException e) {
