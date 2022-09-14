@@ -47,6 +47,7 @@ import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.fanjiao.lib_luban.FileProviderUtils;
 import com.fanjiao.lib_luban.OnCompressListener;
 import com.zhihu.matisse.R;
 import com.zhihu.matisse.internal.entity.Album;
@@ -349,8 +350,7 @@ public class MatisseActivity extends AppCompatActivity implements
       //  Uri uri = Uri.fromFile(file);
       //  mPathUriList.add(uri);
 
-      Uri uri = FileProvider.getUriForFile(MatisseActivity.this,
-          mSpec.captureStrategy.authority, file);
+      Uri uri= FileProviderUtils.getUriForFile(MatisseActivity.this,file);
       mPathUriList.add(uri);
 
       if (mPathList.size() == mSelectNumber) {

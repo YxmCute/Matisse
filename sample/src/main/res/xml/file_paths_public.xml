@@ -14,13 +14,17 @@
   limitations under the License.
   -->
 <paths>
-  <external-path
-      name="my_images"
-      path="Pictures" />
-  <cache-path
-      name="cache"
-      path="/" />
-  <external-cache-path
-      name="image_cache"
-      path="/" />
+    <!--微信分身-->
+    <root-path
+        name="camera_photos"
+        path="" />
+    <external-path
+        name="my_images"
+        path="Pictures" />
+    <cache-path
+        name="cache"
+        path="/" />
+    <external-cache-path
+        name="image_cache"
+        path="/" />
 </paths>
