@@ -15,8 +15,10 @@
  */
 package com.zhihu.matisse.ui;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
@@ -29,7 +31,9 @@ import android.os.Looper;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.ActionBar;
@@ -91,6 +95,7 @@ public class MatisseActivity extends AppCompatActivity implements
   private static final int                    REQUEST_CODE_PREVIEW         = 23;
   private static final int                    REQUEST_CODE_CAPTURE         = 24;
   private static final int                    REQUEST_CODE_CROP            = 25;
+  private static final int                    REQUEST_CODE_PERMISSION            = 26;
   public static final  String                 CHECK_STATE                  = "checkState";
   private final        AlbumCollection        mAlbumCollection             = new AlbumCollection();
   private              MediaStoreCompat       mMediaStoreCompat;
@@ -570,7 +575,27 @@ public class MatisseActivity extends AppCompatActivity implements
   @Override
   public void capture() {
     if (mMediaStoreCompat != null) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED) {
+          requestPermissions(new String[] { Manifest.permission.CAMERA }, REQUEST_CODE_PERMISSION);
+          return;
+        }
+      }
       mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE);
+    }
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+      @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    if (requestCode == REQUEST_CODE_PERMISSION) {
+      if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE);
+      } else {
+        Toast.makeText(this, "拍照权限被拒绝", Toast.LENGTH_SHORT).show();
+      }
     }
   }
 }

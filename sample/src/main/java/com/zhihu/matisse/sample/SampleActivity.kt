@@ -168,7 +168,7 @@ class SampleActivity : AppCompatActivity(), View.OnClickListener {
                         .countable(true)
                         .capture(true)
                         .captureStrategy(
-                            CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider", "test")
+                            CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider", "")
                         )
                         .maxSelectable(9)
                         .addFilter(GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
